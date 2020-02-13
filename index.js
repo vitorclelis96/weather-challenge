@@ -1,5 +1,7 @@
 const express = require('express');
 require('dotenv').config();
+// const spotifyAuth = require('./utils/spotify_auth');
+const SpotifyToken = require('./utils/SpotifyToken');
 
 const mainRoute = require('./routes/mainRoute');
 
@@ -7,6 +9,8 @@ const mainRoute = require('./routes/mainRoute');
 const app = express();
 app.use(express.json());
 
+// Get an initial token right after server starts to listen
+const spotifyToken = new SpotifyToken().init();
 
 
 app.use(mainRoute);

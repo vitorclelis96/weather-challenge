@@ -1,4 +1,6 @@
 const axios = require('axios').default;
+const SpotifyToken = require('../utils/SpotifyToken');
+const spotToken = new SpotifyToken();
 
 
 const getGenreBasedOnTemperature = (temp) => {
@@ -13,35 +15,59 @@ const getGenreBasedOnTemperature = (temp) => {
     }
 }
 
-
-const getPlaylist = async (genre) => {
+const getRandomTracks = async (playlists) => {
     try {
-        const categoriePlaylists = `https://api.spotify.com/v1/browse/categories/${genre}/playlists`;
+        const token = await spotToken.getToken();
+        const randomPlaylistUrl = playlists[Math.floor(Math.random() * playlists.length)].tracks.href;
         const auth = {
-            "Authorization": `Bearer ${process.env.SPOTIFY_KEY}`
+            "Authorization": `Bearer ${token}`
         }
-        const teste = await axios.get(categoriePlaylists, {
+        const response = await axios.get(randomPlaylistUrl, {
             headers: auth
         })
 
-        console.log(teste);
-        
+        const tracks = []
+        for (const item of response.data.items) {
+            tracks.push(item.track.name);
+        }
+
+        return tracks;
     } catch (error) {
         if (error.response.status === 404) {
-            throw new Error("City not found")
+            throw new Error("Tracks not found")
         }
         throw error;
     }
 }
 
 
-const queryCityByName = async (cityName) => {
+const getPlaylist = async (genre) => {
+    try {
+        const token = await spotToken.getToken();
+        const categoriePlaylists = `https://api.spotify.com/v1/browse/categories/${genre}/playlists?limit=20`;
+        const auth = {
+            "Authorization": `Bearer ${token}`
+        }
+        const response = await axios.get(categoriePlaylists, {
+            headers: auth
+        })
+        return response.data.playlists.items;
+    } catch (error) {
+        if (error.response.status === 404) {
+            throw new Error("Playlists not found")
+        }
+        throw error;
+    }
+}
+
+
+const getCityWeatherByName = async (cityName) => {
     try {
         const queryUrl = `http://api.openweathermap.org/data/2.5/weather?q=${cityName}&appid=${process.env.OPEN_WEATHER_KEY}&units=metric`;
 
         const response = await axios.get(queryUrl);
         
-        return response.data;
+        return response.data.main.temp;
     } catch (error) {
         if (error.response.status === 404) {
             throw new Error("City not found")
@@ -59,11 +85,12 @@ const getMusicList = async (req, res, next) => {
         const cityLat = req.query.lat;
         const cityLon = req.query.lon;
 
-        let weatherRawData;
+        let cityTemperature;
         if (cityName) {
-            weatherRawData = await queryCityByName(req.query.city);
+            cityTemperature = await getCityWeatherByName(req.query.city);
         } else if (cityLat && cityLon) {
-            weatherRawData = await queryCityByGeo(req.query.city);
+            // TODO
+            cityTemperature = await queryCityByGeo(req.query.city);
         } else {
             return res.status(422).json({
                 error: "You should provida either a city name or the city lat and lon"
@@ -71,11 +98,16 @@ const getMusicList = async (req, res, next) => {
         }
 
         // ACT
-
-        // teste
-        getPlaylist("rock");
+        const genre = getGenreBasedOnTemperature(cityTemperature)
+        const playlists = await getPlaylist(genre);
         
-
+        const randomTracks = await getRandomTracks(playlists);
+        
+        return res.json({
+            temperatur: cityTemperature,
+            genre: genre,
+            tracks: randomTracks
+        });
     } catch (error) {
         return next(error);
     }
