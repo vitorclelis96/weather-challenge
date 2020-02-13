@@ -14,5 +14,5 @@ npm install
 ```
 and finally 
 ```
-npm run
+npm run start
 ```
