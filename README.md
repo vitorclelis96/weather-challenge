@@ -12,7 +12,7 @@ then
 ```
 npm install
 ```
-then 
+and finally 
 ```
 npm run
 ```
