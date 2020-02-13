@@ -53,6 +53,7 @@ class SpotifySingleToken {
     async getToken() {
         try {
             const currentTime = new Date(Date.now()).getTime();
+            // Spotify token expires in 3600 seconds, so it should update a little before it runs out.
             if (this._getSecondsBetween(currentTime, this.tokenDate.getTime()) >= 3540) {
                 await this.init();
             }

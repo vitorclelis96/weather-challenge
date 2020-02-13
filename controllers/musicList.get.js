@@ -101,7 +101,7 @@ const getMusicList = async (req, res, next) => {
 
         let cityTemperature;
         if (cityName) {
-            cityTemperature = await getCityWeatherByName(req.query.city);
+            cityTemperature = await getCityWeatherByName(cityName);
         } else if (cityLat && cityLon) {
             cityTemperature = await getCityWeatherByGeo(cityLat, cityLon);
         } else {
