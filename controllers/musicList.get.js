@@ -76,11 +76,25 @@ const getCityWeatherByName = async (cityName) => {
     }
 }
 
+const getCityWeatherByGeo = async (lat, lon) => {
+    try {
+        const queryUrl = `http://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${process.env.OPEN_WEATHER_KEY}&units=metric`;
+
+        const response = await axios.get(queryUrl);
+        
+        return response.data.main.temp;
+    } catch (error) {
+        if (error.response.status === 404) {
+            throw new Error("City not found")
+        }
+        throw error;
+    }
+}
+
 
 
 const getMusicList = async (req, res, next) => {
     try {
-        // VALIDATE
         const cityName = req.query.city;
         const cityLat = req.query.lat;
         const cityLon = req.query.lon;
@@ -89,15 +103,13 @@ const getMusicList = async (req, res, next) => {
         if (cityName) {
             cityTemperature = await getCityWeatherByName(req.query.city);
         } else if (cityLat && cityLon) {
-            // TODO
-            cityTemperature = await queryCityByGeo(req.query.city);
+            cityTemperature = await getCityWeatherByGeo(cityLat, cityLon);
         } else {
             return res.status(422).json({
-                error: "You should provida either a city name or the city lat and lon"
+                error: "You should provide either a city name or the city lat and lon"
             })
         }
 
-        // ACT
         const genre = getGenreBasedOnTemperature(cityTemperature)
         const playlists = await getPlaylist(genre);
         
