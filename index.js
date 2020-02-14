@@ -16,7 +16,7 @@ const spotifyToken = new SpotifyToken().init();
 /*
     Example Route
     /v1/music?city=Contagem 
-    /v1/music?lat=120&lon=50
+    /v1/music?lat=50&lon=50
 */
 app.use("/v1", mainRoute);
 
