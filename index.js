@@ -13,7 +13,12 @@ app.use(express.json());
 const spotifyToken = new SpotifyToken().init();
 
 
-app.use(mainRoute);
+/*
+    Example Route
+    /v1/music?city=Contagem 
+    /v1/music?lat=120&lon=50
+*/
+app.use("/v1", mainRoute);
 
 
 
