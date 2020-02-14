@@ -69,7 +69,7 @@ const getCityWeatherByName = async (cityName) => {
         
         return response.data.main.temp;
     } catch (error) {
-        if (error.response.status === 404) {
+        if (error.response.status === 404 || error.response.status === 400) {
             throw new Error("City not found")
         }
         throw error;
@@ -84,7 +84,7 @@ const getCityWeatherByGeo = async (lat, lon) => {
         
         return response.data.main.temp;
     } catch (error) {
-        if (error.response.status === 404) {
+        if (error.response.status === 404 || error.response.status === 400) {
             throw new Error("City not found")
         }
         throw error;
